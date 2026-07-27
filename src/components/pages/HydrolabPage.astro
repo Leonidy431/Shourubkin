@@ -1,0 +1,79 @@
+---
+import Base from '../../layouts/Base.astro';
+import { t, type Lang } from '../../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const dict = t[lang];
+
+const title = lang === 'ru' ? 'Гидролаборатория Звёздного городка' : 'Star City Hydro Laboratory';
+const intro =
+  lang === 'ru'
+    ? 'Гидролаборатория Центра подготовки космонавтов им. Ю. А. Гагарина — уникальное сооружение, где космонавты отрабатывают операции выхода в открытый космос в условиях гидроневесомости.'
+    : 'The hydro laboratory of the Gagarin Cosmonaut Training Center is a unique facility where cosmonauts rehearse spacewalk operations in simulated weightlessness underwater.';
+
+const facts =
+  lang === 'ru'
+    ? [
+        { value: '23 м', label: 'диаметр бассейна' },
+        { value: '12 м', label: 'глубина' },
+        { value: '~30 °C', label: 'температура воды' },
+        { value: '1:1', label: 'макеты модулей станции в натуральную величину' },
+      ]
+    : [
+        { value: '23 m', label: 'pool diameter' },
+        { value: '12 m', label: 'depth' },
+        { value: '~30 °C', label: 'water temperature' },
+        { value: '1:1', label: 'full-scale station module mockups' },
+      ];
+
+const body =
+  lang === 'ru'
+    ? [
+        'В гидролаборатории Александр Шурубкин прошёл путь от старшего инженера-испытателя до начальника лаборатории. Под его руководством и при его участии к работе в открытом космосе готовились десятки космонавтов и астронавтов, включая экипажи международных программ.',
+        'Работа в гидроневесомости — это высочайшие требования к безопасности, методике и точности: водолазы-инструкторы сопровождают космонавта в скафандре на протяжении многочасовых тренировок, имитирующих выход в открытый космос.',
+        'Именно этот опыт лёг в основу методики подготовки профессиональных дайверов и инструкторов, которую Александр Дмитриевич развивает как курс-директор PADI.',
+      ]
+    : [
+        'At the hydro laboratory Alexander Shurubkin rose from senior test engineer to laboratory head. Dozens of cosmonauts and astronauts, including international program crews, prepared for spacewalks under his guidance and with his participation.',
+        'Working in simulated weightlessness demands the highest standards of safety, methodology and precision: instructor-divers accompany a suited cosmonaut through hours-long training sessions imitating a spacewalk.',
+        'This very experience became the foundation of the professional diver and instructor training methodology that Alexander develops today as a PADI Course Director.',
+      ];
+---
+
+<Base title={title + ' — ' + dict.siteName} description={intro} lang={lang} currentPath="/hydrolab">
+  <section>
+    <div class="container">
+      <h1>{title}</h1>
+      <p class="muted intro">{intro}</p>
+
+      <div class="grid grid-4 facts">
+        {facts.map((f) => (
+          <div class="card fact">
+            <div class="value accent">{f.value}</div>
+            <div class="muted">{f.label}</div>
+          </div>
+        ))}
+      </div>
+
+      <div class="body">
+        {body.map((p) => <p>{p}</p>)}
+      </div>
+
+      <p class="muted note">
+        {lang === 'ru'
+          ? 'Архивные фотографии из гидролаборатории будут добавлены в галерею.'
+          : 'Archive photos from the hydro laboratory will be added to the gallery.'}
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro { max-width: 680px; margin: 1rem 0 2rem; }
+  .facts { margin-bottom: 2.5rem; }
+  .fact { text-align: center; padding: 1.25rem 0.75rem; }
+  .value { font-size: 1.6rem; font-weight: 800; }
+  .body { max-width: 720px; display: flex; flex-direction: column; gap: 1rem; }
+  .note { margin-top: 2.5rem; font-size: 0.9rem; }
+</style>

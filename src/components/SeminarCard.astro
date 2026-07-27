@@ -1,0 +1,32 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import type { Lang } from '../i18n';
+
+interface Props {
+  entry: CollectionEntry<'seminars'>;
+  lang: Lang;
+}
+
+const { entry, lang } = Astro.props;
+const locale = lang === 'ru' ? 'ru-RU' : 'en-GB';
+const fmt = (d: Date) => d.toLocaleDateString(locale, { day: 'numeric', month: 'short', year: 'numeric' });
+const dates = entry.data.dateEnd
+  ? `${fmt(entry.data.dateStart)} — ${fmt(entry.data.dateEnd)}`
+  : fmt(entry.data.dateStart);
+---
+
+<article class="card seminar-card">
+  <div class="seminar-head">
+    <h3>{entry.data.title}</h3>
+    {entry.data.registrationOpen && <span class="tag open">{lang === 'ru' ? 'запись открыта' : 'open'}</span>}
+  </div>
+  <p class="muted">📍 {entry.data.location}</p>
+  <p>🗓 {dates}</p>
+  {entry.data.price && <p class="accent price">{entry.data.price}</p>}
+</article>
+
+<style>
+  .seminar-head { display: flex; justify-content: space-between; align-items: start; gap: 0.5rem; }
+  .open { color: #7be0a3; border-color: #2c5c40; }
+  .price { font-weight: 600; }
+</style>

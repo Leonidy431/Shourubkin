@@ -1,0 +1,33 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { t, type Lang, localizePath } from '../i18n';
+
+interface Props {
+  entry: CollectionEntry<'news'>;
+  lang: Lang;
+}
+
+const { entry, lang } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const href = base + localizePath(`/news/${entry.id.replace(/\.md$/, '')}`, lang);
+const date = entry.data.date.toLocaleDateString(lang === 'ru' ? 'ru-RU' : 'en-GB', {
+  year: 'numeric',
+  month: 'long',
+  day: 'numeric',
+});
+---
+
+<article class="card news-card">
+  {entry.data.cover && <img src={entry.data.cover} alt={entry.data.title} loading="lazy" />}
+  <p class="muted date">{date}</p>
+  <h3><a href={href}>{entry.data.title}</a></h3>
+  {entry.data.summary && <p class="muted">{entry.data.summary}</p>}
+  <a href={href}>{t[lang].readMore} →</a>
+</article>
+
+<style>
+  .news-card img { border-radius: 8px; margin-bottom: 0.75rem; aspect-ratio: 16/9; object-fit: cover; }
+  .date { font-size: 0.85rem; }
+  h3 { margin: 0.25rem 0 0.5rem; }
+  h3 a { color: var(--text); }
+</style>

@@ -1,0 +1,45 @@
+backend:
+  name: github
+  repo: Leonidy431/shourubkin
+  branch: main
+  base_url: https://api.netlify.com # OAuth-провайдер; см. README для настройки
+
+locale: ru
+
+media_folder: "public/uploads"
+public_folder: "/shourubkin/uploads"
+
+collections:
+  - name: "news"
+    label: "Новости"
+    label_singular: "Новость"
+    folder: "src/content/news"
+    create: true
+    slug: "{{year}}-{{month}}-{{day}}-{{slug}}"
+    sortable_fields: ["date", "title"]
+    fields:
+      - { label: "Заголовок", name: "title", widget: "string" }
+      - { label: "Дата", name: "date", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+      - { label: "Язык", name: "lang", widget: "select", options: ["ru", "en"], default: "ru" }
+      - { label: "Краткое описание", name: "summary", widget: "text", required: false }
+      - { label: "Обложка", name: "cover", widget: "image", required: false }
+      - { label: "Теги", name: "tags", widget: "list", required: false }
+      - { label: "Черновик", name: "draft", widget: "boolean", default: false }
+      - { label: "Текст", name: "body", widget: "markdown" }
+
+  - name: "seminars"
+    label: "Семинары"
+    label_singular: "Семинар"
+    folder: "src/content/seminars"
+    create: true
+    slug: "{{fields.dateStart}}-{{slug}}"
+    sortable_fields: ["dateStart", "title"]
+    fields:
+      - { label: "Название", name: "title", widget: "string" }
+      - { label: "Место проведения", name: "location", widget: "string" }
+      - { label: "Дата начала", name: "dateStart", widget: "datetime", format: "YYYY-MM-DD", time_format: false }
+      - { label: "Дата окончания", name: "dateEnd", widget: "datetime", format: "YYYY-MM-DD", time_format: false, required: false }
+      - { label: "Стоимость", name: "price", widget: "string", required: false }
+      - { label: "Язык", name: "lang", widget: "select", options: ["ru", "en"], default: "ru" }
+      - { label: "Запись открыта", name: "registrationOpen", widget: "boolean", default: true }
+      - { label: "Описание", name: "body", widget: "markdown", required: false }

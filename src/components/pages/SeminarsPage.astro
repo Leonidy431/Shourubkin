@@ -1,0 +1,46 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import SeminarCard from '../SeminarCard.astro';
+import { t, type Lang } from '../../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const dict = t[lang];
+
+const title = lang === 'ru' ? 'Расписание семинаров' : 'Seminar Schedule';
+const now = new Date();
+const all = (await getCollection('seminars', (e) => e.data.lang === lang)).sort(
+  (a, b) => a.data.dateStart.getTime() - b.data.dateStart.getTime()
+);
+const upcoming = all.filter((e) => (e.data.dateEnd ?? e.data.dateStart) >= now);
+const past = all.filter((e) => (e.data.dateEnd ?? e.data.dateStart) < now).reverse();
+---
+
+<Base title={title + ' — ' + dict.siteName} description={title} lang={lang} currentPath="/seminars">
+  <section>
+    <div class="container">
+      <h1>{title}</h1>
+
+      <h2 style="margin-top:2rem">{dict.upcomingSeminars}</h2>
+      {upcoming.length > 0 ? (
+        <div class="grid grid-3">
+          {upcoming.map((entry) => <SeminarCard entry={entry} lang={lang} />)}
+        </div>
+      ) : (
+        <p class="muted">
+          {lang === 'ru' ? 'Новые даты скоро будут объявлены.' : 'New dates will be announced soon.'}
+        </p>
+      )}
+
+      {past.length > 0 && (
+        <>
+          <h2 style="margin-top:3rem">{lang === 'ru' ? 'Прошедшие' : 'Past'}</h2>
+          <div class="grid grid-3">
+            {past.map((entry) => <SeminarCard entry={entry} lang={lang} />)}
+          </div>
+        </>
+      )}
+    </div>
+  </section>
+</Base>

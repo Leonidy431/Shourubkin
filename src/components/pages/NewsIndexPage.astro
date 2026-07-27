@@ -1,0 +1,32 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import NewsCard from '../NewsCard.astro';
+import { t, type Lang } from '../../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const dict = t[lang];
+
+const title = lang === 'ru' ? 'Новости' : 'News';
+const news = (await getCollection('news', (e) => e.data.lang === lang && !e.data.draft)).sort(
+  (a, b) => b.data.date.getTime() - a.data.date.getTime()
+);
+---
+
+<Base title={title + ' — ' + dict.siteName} description={title} lang={lang} currentPath="/news">
+  <section>
+    <div class="container">
+      <h1>{title}</h1>
+      {news.length > 0 ? (
+        <div class="grid grid-3" style="margin-top:2rem">
+          {news.map((entry) => <NewsCard entry={entry} lang={lang} />)}
+        </div>
+      ) : (
+        <p class="muted" style="margin-top:1rem">
+          {lang === 'ru' ? 'Новости скоро появятся.' : 'News coming soon.'}
+        </p>
+      )}
+    </div>
+  </section>
+</Base>

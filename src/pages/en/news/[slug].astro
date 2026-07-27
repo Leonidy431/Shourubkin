@@ -1,0 +1,36 @@
+---
+import { getCollection, render } from 'astro:content';
+import Base from '../../../layouts/Base.astro';
+import { t } from '../../../i18n';
+
+export async function getStaticPaths() {
+  const news = await getCollection('news', (e) => e.data.lang === 'en' && !e.data.draft);
+  return news.map((entry) => ({
+    params: { slug: entry.id.replace(/\.md$/, '') },
+    props: { entry },
+  }));
+}
+
+const { entry } = Astro.props;
+const { Content } = await render(entry);
+const date = entry.data.date.toLocaleDateString('en-GB', { year: 'numeric', month: 'long', day: 'numeric' });
+---
+
+<Base title={entry.data.title + ' — ' + t.en.siteName} description={entry.data.summary ?? ''} lang="en" currentPath="/news">
+  <section>
+    <div class="container article">
+      <p class="muted">{date}</p>
+      <h1>{entry.data.title}</h1>
+      {entry.data.cover && <img src={entry.data.cover} alt={entry.data.title} class="cover" />}
+      <div class="prose">
+        <Content />
+      </div>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .article { max-width: 760px; }
+  .cover { border-radius: var(--radius); margin: 1.5rem 0; }
+  .prose { margin-top: 1.5rem; display: flex; flex-direction: column; gap: 1rem; }
+</style>
