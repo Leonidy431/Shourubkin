@@ -132,7 +132,23 @@ async function login() {
   for (const c of candidates) { pat = await tryDecrypt(auth, c); if (pat) break; }
   $('loginBtn').disabled = false;
   if (!pat) { err.textContent = 'Неверный пароль.'; err.hidden = false; return; }
-  token = pat.trim();
+  await acceptToken(pat.trim(), err);
+}
+
+// Прежде чем пускать в панель, проверяем токен реальным запросом к репозиторию —
+// иначе мёртвый токен из устаревшего auth.json давал бы ошибку только внутри.
+async function acceptToken(candidate, errEl) {
+  errEl.hidden = true;
+  const prev = token;
+  token = candidate;
+  try {
+    await gh(`/repos/${REPO}`);
+  } catch (e) {
+    token = prev;
+    errEl.textContent = e.message;
+    errEl.hidden = false;
+    return;
+  }
   sessionStorage.setItem('gh_token', token);
   showApp();
 }
@@ -140,9 +156,7 @@ async function login() {
 function patLogin() {
   const v = $('patInput').value.trim();
   if (!v) return;
-  token = v;
-  sessionStorage.setItem('gh_token', token);
-  showApp();
+  acceptToken(v, $('loginErr'));
 }
 
 function logout() {
@@ -160,7 +174,10 @@ async function gh(path, opts = {}) {
       ...(opts.headers || {}),
     },
   });
-  if (res.status === 401) throw new Error('Токен отклонён GitHub (401): он истёк или отозван. Создайте новый fine-grained PAT и обновите секрет ADMIN_PAT.');
+  if (res.status === 401) {
+    sessionStorage.removeItem('gh_token');
+    throw new Error('Токен отклонён GitHub (401): он истёк или отозван. Создайте новый fine-grained PAT, обновите секрет ADMIN_PAT и дождитесь пересборки сайта (Actions → Deploy → Run workflow). Затем обновите эту страницу.');
+  }
   if (res.status === 403) {
     const body = await res.text();
     if (res.headers.get('x-ratelimit-remaining') === '0' || /rate limit/i.test(body)) {
@@ -296,7 +313,16 @@ $('loginBtn').onclick = login;
 $('pw').addEventListener('keydown', (e) => { if (e.key === 'Enter') login(); });
 $('patBtn').onclick = patLogin;
 $('logoutBtn').onclick = logout;
-if (token) showApp();
+// Сохранённый токен тоже проверяем, а не доверяем слепо
+if (token) {
+  gh(`/repos/${REPO}`).then(showApp).catch((e) => {
+    sessionStorage.removeItem('gh_token');
+    token = '';
+    const err = $('loginErr');
+    err.textContent = 'Сохранённая сессия недействительна: ' + e.message;
+    err.hidden = false;
+  });
+}
 </script>
 </body>
 </html>
