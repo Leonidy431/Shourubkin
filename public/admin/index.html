@@ -139,6 +139,13 @@ async function login() {
 // иначе мёртвый токен из устаревшего auth.json давал бы ошибку только внутри.
 async function acceptToken(candidate, errEl) {
   errEl.hidden = true;
+  // Вычищаем пробелы и невидимые символы, попавшие при копировании
+  candidate = candidate.replace(/[\s\u200B-\u200D\uFEFF\u00A0]/g, '');
+  if (!/^[!-~]+$/.test(candidate)) {
+    errEl.textContent = 'Токен содержит недопустимые символы (кириллицу или спецзнаки из буфера обмена). Вставьте только сам токен — латиница, цифры и подчёркивания, обычно начинается с github_pat_';
+    errEl.hidden = false;
+    return;
+  }
   const prev = token;
   token = candidate;
   try {
