@@ -1,4 +1,5 @@
 ---
+import { getEntry, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { t, type Lang } from '../../i18n';
 
@@ -6,11 +7,10 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const dict = t[lang];
 
-const title = lang === 'ru' ? 'Контакты' : 'Contacts';
-const intro =
-  lang === 'ru'
-    ? 'Для записи на курсы, вопросов о семинарах и сотрудничества свяжитесь любым удобным способом.'
-    : 'To apply for courses, ask about seminars or discuss cooperation, get in touch via any convenient channel.';
+const entry = await getEntry('pages', `contacts-${lang}`);
+if (!entry) throw new Error(`Missing content: pages/contacts-${lang}`);
+const { Content } = await render(entry);
+const { title, intro } = entry.data;
 
 // Реальные контакты приходят из секретов GitHub Actions на этапе сборки
 // (см. .github/workflows/deploy.yml); в репозитории хранятся только заглушки.
@@ -38,11 +38,11 @@ const channels = [
 ];
 ---
 
-<Base title={title + ' — ' + dict.siteName} description={intro} lang={lang} currentPath="/contacts">
+<Base title={title + ' — ' + dict.siteName} description={intro ?? ''} lang={lang} currentPath="/contacts">
   <section>
     <div class="container">
       <h1>{title}</h1>
-      <p class="muted intro">{intro}</p>
+      {intro && <p class="muted intro">{intro}</p>}
 
       <div class="grid grid-3">
         {channels.map((c) => (
@@ -53,6 +53,9 @@ const channels = [
         ))}
       </div>
 
+      <div class="prose muted">
+        <Content />
+      </div>
     </div>
   </section>
 </Base>
@@ -61,5 +64,5 @@ const channels = [
   .intro { max-width: 680px; margin: 1rem 0 2rem; }
   .channel { color: var(--text); transition: border-color 0.15s ease; }
   .channel:hover { text-decoration: none; border-color: var(--accent); }
-  .note { margin-top: 2rem; font-size: 0.9rem; }
+  .prose { max-width: 680px; margin-top: 2rem; }
 </style>

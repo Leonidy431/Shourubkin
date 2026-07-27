@@ -1,11 +1,14 @@
 ---
 import { t, type Lang } from '../i18n';
 
-interface Props { lang: Lang }
-const { lang } = Astro.props;
+interface Props {
+  lang: Lang;
+  stats?: { value: string; label: string }[];
+}
+const { lang, stats: statsProp } = Astro.props;
 const dict = t[lang];
 
-const stats = [
+const stats = statsProp ?? [
   { value: '40+', label: dict.statsYears },
   { value: '300+', label: dict.statsInstructors },
   { value: '60+', label: dict.statsCosmonauts },

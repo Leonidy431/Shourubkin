@@ -1,5 +1,5 @@
 ---
-import { getCollection } from 'astro:content';
+import { getCollection, getEntry } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import NewsCard from '../NewsCard.astro';
 import SeminarCard from '../SeminarCard.astro';
@@ -11,6 +11,13 @@ const { lang } = Astro.props;
 const dict = t[lang];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 const link = (p: string) => base + localizePath(p, lang);
+
+const page = await getEntry('pages', `home-${lang}`);
+const subtitle = page?.data.subtitle ?? dict.heroSubtitle;
+const lead = page?.data.lead ?? dict.heroLead;
+const stats = page?.data.stats;
+const identityDiverText = page?.data.identityDiver ?? dict.identityDiverText;
+const identityHydrolabText = page?.data.identityHydrolab ?? dict.identityHydrolabText;
 
 const news = (await getCollection('news', (e) => e.data.lang === lang && !e.data.draft))
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
@@ -27,8 +34,8 @@ const seminars = (await getCollection('seminars', (e) => e.data.lang === lang))
   <section class="hero">
     <div class="container">
       <h1>{dict.heroTitle}</h1>
-      <p class="subtitle accent">{dict.heroSubtitle}</p>
-      <p class="lead muted">{dict.heroLead}</p>
+      <p class="subtitle accent">{subtitle}</p>
+      <p class="lead muted">{lead}</p>
       <div class="cta-row">
         <a href={link('/courses')} class="btn">{dict.ctaCourses}</a>
         <a href={link('/contacts')} class="btn secondary">{dict.ctaContact}</a>
@@ -38,7 +45,7 @@ const seminars = (await getCollection('seminars', (e) => e.data.lang === lang))
 
   <section>
     <div class="container">
-      <Stats lang={lang} />
+      <Stats lang={lang} stats={stats} />
     </div>
   </section>
 
@@ -47,12 +54,12 @@ const seminars = (await getCollection('seminars', (e) => e.data.lang === lang))
       <a class="card identity" href={link('/courses')}>
         <div class="identity-icon">🤿</div>
         <h2>{dict.identityDiver}</h2>
-        <p class="muted">{dict.identityDiverText}</p>
+        <p class="muted">{identityDiverText}</p>
       </a>
       <a class="card identity" href={link('/hydrolab')}>
         <div class="identity-icon">🚀</div>
         <h2>{dict.identityHydrolab}</h2>
-        <p class="muted">{dict.identityHydrolabText}</p>
+        <p class="muted">{identityHydrolabText}</p>
       </a>
     </div>
   </section>
