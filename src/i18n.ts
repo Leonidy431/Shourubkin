@@ -72,5 +72,8 @@ export function langFromUrl(pathname: string, base: string): Lang {
 
 export function localizePath(path: string, lang: Lang): string {
   const clean = path.startsWith('/') ? path : '/' + path;
-  return lang === 'en' ? '/en' + (clean === '/' ? '' : clean) : clean;
+  const localized = lang === 'en' ? '/en' + (clean === '/' ? '' : clean) : clean;
+  // Трейлинг-слэш обязателен: GitHub Pages отдаёт directory/index.html без
+  // 301-редиректа только по адресу со слэшем на конце
+  return localized.endsWith('/') ? localized : localized + '/';
 }
