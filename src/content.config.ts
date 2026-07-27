@@ -27,4 +27,23 @@ const seminars = defineCollection({
   }),
 });
 
-export const collections = { news, seminars };
+const pages = defineCollection({
+  loader: glob({ pattern: '**/*.md', base: './src/content/pages' }),
+  schema: z.object({
+    title: z.string(),
+    lang: z.enum(['ru', 'en']).default('ru'),
+    subtitle: z.string().optional(),
+    lead: z.string().optional(),
+    intro: z.string().optional(),
+    note: z.string().optional(),
+    stats: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    facts: z.array(z.object({ value: z.string(), label: z.string() })).optional(),
+    timeline: z.array(z.object({ period: z.string(), text: z.string() })).optional(),
+    courses: z.array(z.object({ name: z.string(), text: z.string() })).optional(),
+    pathway: z.array(z.string()).optional(),
+    identityDiver: z.string().optional(),
+    identityHydrolab: z.string().optional(),
+  }),
+});
+
+export const collections = { news, seminars, pages };

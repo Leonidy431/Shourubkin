@@ -1,4 +1,5 @@
 ---
+import { getEntry, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { t, type Lang } from '../../i18n';
 
@@ -6,35 +7,17 @@ interface Props { lang: Lang }
 const { lang } = Astro.props;
 const dict = t[lang];
 
-const timeline =
-  lang === 'ru'
-    ? [
-        { period: '1970-е', text: 'Инженерное образование, начало работы в области водолазной подготовки.' },
-        { period: '1980-е — 1990-е', text: 'Гидролаборатория Центра подготовки космонавтов им. Ю. А. Гагарина, Звёздный городок: старший инженер-испытатель, начальник лаборатории. Подготовка космонавтов и астронавтов (в том числе NASA) к внекорабельной деятельности в условиях гидроневесомости.' },
-        { period: '1990-е', text: 'Переход в рекреационный дайвинг. Сертификация PADI, работа инструктором.' },
-        { period: '2000-е', text: 'Курс-директор PADI. Проведение программ IDC в России, Египте и других странах.' },
-        { period: 'Сегодня', text: 'Платиновый курс-директор PADI. Сотни подготовленных инструкторов, семинары и программы профессиональной подготовки.' },
-      ]
-    : [
-        { period: '1970s', text: 'Engineering education, first steps in diving training.' },
-        { period: '1980s — 1990s', text: 'Hydro laboratory of the Gagarin Cosmonaut Training Center, Star City: senior test engineer, laboratory head. Trained cosmonauts and astronauts (including NASA crews) for spacewalks in simulated weightlessness underwater.' },
-        { period: '1990s', text: 'Transition to recreational diving. PADI certification, work as an instructor.' },
-        { period: '2000s', text: 'PADI Course Director. IDC programs in Russia, Egypt and other countries.' },
-        { period: 'Today', text: 'PADI Platinum Course Director. Hundreds of instructors trained, seminars and professional development programs.' },
-      ];
-
-const title = lang === 'ru' ? 'Биография' : 'Biography';
-const intro =
-  lang === 'ru'
-    ? 'Путь Александра Шурубкина уникален: от подготовки космонавтов к выходам в открытый космос — к подготовке профессиональных инструкторов дайвинга. Обе профессии объединяет одно: умение научить человека уверенно работать под водой.'
-    : "Alexander Shurubkin's path is unique: from preparing cosmonauts for spacewalks to educating professional diving instructors. Both careers share one essence: teaching people to work confidently underwater.";
+const entry = await getEntry('pages', `bio-${lang}`);
+if (!entry) throw new Error(`Missing content: pages/bio-${lang}`);
+const { Content } = await render(entry);
+const { title, intro, timeline = [] } = entry.data;
 ---
 
-<Base title={title + ' — ' + dict.siteName} description={intro} lang={lang} currentPath="/bio">
+<Base title={title + ' — ' + dict.siteName} description={intro ?? ''} lang={lang} currentPath="/bio">
   <section>
     <div class="container">
       <h1>{title}</h1>
-      <p class="muted intro">{intro}</p>
+      {intro && <p class="muted intro">{intro}</p>}
 
       <div class="timeline">
         {timeline.map((item) => (
@@ -45,11 +28,9 @@ const intro =
         ))}
       </div>
 
-      <p class="muted note">
-        {lang === 'ru'
-          ? 'Раздел будет дополнен фотографиями и документами из личного архива.'
-          : 'This section will be extended with photos and documents from the personal archive.'}
-      </p>
+      <div class="prose">
+        <Content />
+      </div>
     </div>
   </section>
 </Base>
@@ -59,7 +40,7 @@ const intro =
   .timeline { display: flex; flex-direction: column; gap: 1.25rem; max-width: 760px; }
   .timeline-item { display: grid; grid-template-columns: 140px 1fr; gap: 1rem; align-items: start; }
   .period { font-weight: 700; padding-top: 1.4rem; }
-  .note { margin-top: 2.5rem; font-size: 0.9rem; }
+  .prose { max-width: 720px; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; }
   @media (max-width: 600px) {
     .timeline-item { grid-template-columns: 1fr; gap: 0.3rem; }
     .period { padding-top: 0; }

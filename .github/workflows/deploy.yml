@@ -22,6 +22,11 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: node scripts/gen-admin-auth.mjs
+        env:
+          ADMIN_PAT: ${{ secrets.ADMIN_PAT }}
+          MAX_NUMBER: ${{ secrets.MAX_NUMBER }}
+          TELEGRAM_NUMBER: ${{ secrets.TELEGRAM_NUMBER }}
       - run: npm run build
         env:
           CONTACT_EMAIL: ${{ secrets.EMAIL }}

@@ -1,4 +1,5 @@
 ---
+import { getEntry, render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { t, type Lang, localizePath } from '../../i18n';
 
@@ -7,35 +8,17 @@ const { lang } = Astro.props;
 const dict = t[lang];
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 
-const title = lang === 'ru' ? 'Курсы и программы IDC' : 'Courses & IDC Programs';
-const intro =
-  lang === 'ru'
-    ? 'Профессиональная подготовка инструкторов PADI: от Divemaster до Master Instructor. Программы проводятся в Москве, Египте и других локациях.'
-    : 'Professional PADI instructor training: from Divemaster to Master Instructor. Programs run in Moscow, Egypt and other locations.';
-
-const courses =
-  lang === 'ru'
-    ? [
-        { name: 'IDC — Instructor Development Course', text: 'Полный курс подготовки инструкторов PADI: теория, стандарты, методика преподавания, подготовка к IE.' },
-        { name: 'IDC Staff Instructor', text: 'Программа для инструкторов, желающих участвовать в подготовке новых инструкторов.' },
-        { name: 'MSDT Prep', text: 'Подготовка Master Scuba Diver Trainer: специализации и методика их преподавания.' },
-        { name: 'Семинары для профессионалов', text: 'Семинары по стандартам PADI, обновлениям программ и методике обучения.' },
-      ]
-    : [
-        { name: 'IDC — Instructor Development Course', text: 'Complete PADI instructor training: theory, standards, teaching methodology, IE preparation.' },
-        { name: 'IDC Staff Instructor', text: 'Program for instructors who want to take part in training new instructors.' },
-        { name: 'MSDT Prep', text: 'Master Scuba Diver Trainer preparation: specialties and how to teach them.' },
-        { name: 'Professional seminars', text: 'Seminars on PADI standards, program updates and teaching methodology.' },
-      ];
-
-const pathway = ['Open Water', 'Advanced', 'Rescue', 'Divemaster', 'OWSI / IDC', 'MSDT', 'Master Instructor', 'Course Director'];
+const entry = await getEntry('pages', `courses-${lang}`);
+if (!entry) throw new Error(`Missing content: pages/courses-${lang}`);
+const { Content } = await render(entry);
+const { title, intro, pathway = [], courses = [] } = entry.data;
 ---
 
-<Base title={title + ' — ' + dict.siteName} description={intro} lang={lang} currentPath="/courses">
+<Base title={title + ' — ' + dict.siteName} description={intro ?? ''} lang={lang} currentPath="/courses">
   <section>
     <div class="container">
       <h1>{title}</h1>
-      <p class="muted intro">{intro}</p>
+      {intro && <p class="muted intro">{intro}</p>}
 
       <h2>{lang === 'ru' ? 'Путь профессионала PADI' : 'The PADI Pro pathway'}</h2>
       <div class="pathway">
@@ -56,16 +39,13 @@ const pathway = ['Open Water', 'Advanced', 'Rescue', 'Divemaster', 'OWSI / IDC',
         ))}
       </div>
 
-      <div class="cta card">
-        <p>
-          {lang === 'ru'
-            ? 'Актуальные даты и стоимость — в расписании семинаров. Для записи свяжитесь любым удобным способом.'
-            : 'Current dates and pricing are in the seminar schedule. To apply, get in touch via any convenient channel.'}
-        </p>
-        <div class="cta-row">
-          <a href={base + localizePath('/seminars', lang)} class="btn">{dict.allSeminars}</a>
-          <a href={base + localizePath('/contacts', lang)} class="btn secondary">{dict.ctaContact}</a>
-        </div>
+      <div class="prose">
+        <Content />
+      </div>
+
+      <div class="cta-row">
+        <a href={base + localizePath('/seminars', lang)} class="btn">{dict.allSeminars}</a>
+        <a href={base + localizePath('/contacts', lang)} class="btn secondary">{dict.ctaContact}</a>
       </div>
     </div>
   </section>
@@ -75,6 +55,6 @@ const pathway = ['Open Water', 'Advanced', 'Rescue', 'Divemaster', 'OWSI / IDC',
   .intro { max-width: 680px; margin: 1rem 0 2.5rem; }
   .pathway { display: flex; flex-wrap: wrap; gap: 0.5rem; align-items: center; }
   .step { color: var(--text); }
-  .cta { margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; }
-  .cta-row { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .prose { max-width: 720px; margin-top: 2.5rem; display: flex; flex-direction: column; gap: 1rem; }
+  .cta-row { display: flex; gap: 0.9rem; flex-wrap: wrap; margin-top: 2rem; }
 </style>
