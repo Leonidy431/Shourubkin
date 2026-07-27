@@ -1,7 +1,7 @@
 ---
 title: "Home"
 lang: en
-subtitle: "PADI Platinum Course Director · Veteran of the Gagarin Cosmonaut Training Center Hydro Laboratory"
+subtitle: "PADI Platinum Course Director · Head of the Research & Testing Laboratory, Gagarin Cosmonaut Training Center Hydro Lab (1979–1997)"
 lead: "The first PADI Platinum Course Director in Russia, having earned the system's highest status seven times. For eighteen years he prepared cosmonauts and astronauts for spacewalks at the Star City hydro laboratory — since 1997 he has been training professional diving instructors."
 stats:
   - { value: "18 yrs", label: "at the CTC hydro laboratory (1979–1997)" }
