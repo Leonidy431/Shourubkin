@@ -160,7 +160,16 @@ async function gh(path, opts = {}) {
       ...(opts.headers || {}),
     },
   });
-  if (res.status === 401 || res.status === 403) throw new Error('Токен не принят GitHub (401/403). Проверьте срок действия и права PAT.');
+  if (res.status === 401) throw new Error('Токен отклонён GitHub (401): он истёк или отозван. Создайте новый fine-grained PAT и обновите секрет ADMIN_PAT.');
+  if (res.status === 403) {
+    const body = await res.text();
+    if (res.headers.get('x-ratelimit-remaining') === '0' || /rate limit/i.test(body)) {
+      const reset = Number(res.headers.get('x-ratelimit-reset')) * 1000;
+      const mins = reset ? Math.max(1, Math.ceil((reset - Date.now()) / 60000)) : null;
+      throw new Error('Исчерпан лимит запросов GitHub API. Токен, скорее всего, в порядке — подождите' + (mins ? ` ~${mins} мин.` : ' до часа.') + ' и попробуйте снова.');
+    }
+    throw new Error('Нет прав (403). Проверьте, что PAT выдан именно на репозиторий Shourubkin с правом Contents: Read and write. ' + body.slice(0, 150));
+  }
   if (!res.ok && res.status !== 404) throw new Error('GitHub API: ' + res.status + ' ' + (await res.text()).slice(0, 200));
   return res;
 }
