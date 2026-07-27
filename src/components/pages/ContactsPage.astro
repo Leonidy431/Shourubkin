@@ -1,0 +1,65 @@
+---
+import Base from '../../layouts/Base.astro';
+import { t, type Lang } from '../../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const dict = t[lang];
+
+const title = lang === 'ru' ? 'Контакты' : 'Contacts';
+const intro =
+  lang === 'ru'
+    ? 'Для записи на курсы, вопросов о семинарах и сотрудничества свяжитесь любым удобным способом.'
+    : 'To apply for courses, ask about seminars or discuss cooperation, get in touch via any convenient channel.';
+
+// Реальные контакты приходят из секретов GitHub Actions на этапе сборки
+// (см. .github/workflows/deploy.yml); в репозитории хранятся только заглушки.
+const email = process.env.CONTACT_EMAIL || 'info@example.com';
+const maxNumber = process.env.CONTACT_MAX || '';
+const tgRaw = process.env.CONTACT_TELEGRAM || '';
+const tgHref = tgRaw
+  ? tgRaw.startsWith('@')
+    ? 'https://t.me/' + tgRaw.slice(1)
+    : /^[+\d][\d\s\-()]+$/.test(tgRaw)
+      ? 'https://t.me/+' + tgRaw.replace(/[^\d]/g, '')
+      : 'https://t.me/' + tgRaw
+  : 'https://t.me/username_here';
+
+const channels = [
+  {
+    label: 'Telegram',
+    href: tgHref,
+    note: tgRaw || (lang === 'ru' ? 'самый быстрый способ' : 'fastest way'),
+  },
+  ...(maxNumber
+    ? [{ label: 'MAX', href: 'tel:' + maxNumber.replace(/[^+\d]/g, ''), note: maxNumber }]
+    : []),
+  { label: 'Email', href: 'mailto:' + email, note: email },
+];
+---
+
+<Base title={title + ' — ' + dict.siteName} description={intro} lang={lang} currentPath="/contacts">
+  <section>
+    <div class="container">
+      <h1>{title}</h1>
+      <p class="muted intro">{intro}</p>
+
+      <div class="grid grid-3">
+        {channels.map((c) => (
+          <a class="card channel" href={c.href} target="_blank" rel="noopener">
+            <h3>{c.label}</h3>
+            <p class="muted">{c.note}</p>
+          </a>
+        ))}
+      </div>
+
+    </div>
+  </section>
+</Base>
+
+<style>
+  .intro { max-width: 680px; margin: 1rem 0 2rem; }
+  .channel { color: var(--text); transition: border-color 0.15s ease; }
+  .channel:hover { text-decoration: none; border-color: var(--accent); }
+  .note { margin-top: 2rem; font-size: 0.9rem; }
+</style>

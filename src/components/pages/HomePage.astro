@@ -1,0 +1,97 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import NewsCard from '../NewsCard.astro';
+import SeminarCard from '../SeminarCard.astro';
+import Stats from '../Stats.astro';
+import { t, type Lang, localizePath } from '../../i18n';
+
+interface Props { lang: Lang }
+const { lang } = Astro.props;
+const dict = t[lang];
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const link = (p: string) => base + localizePath(p, lang);
+
+const news = (await getCollection('news', (e) => e.data.lang === lang && !e.data.draft))
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+  .slice(0, 3);
+
+const now = new Date();
+const seminars = (await getCollection('seminars', (e) => e.data.lang === lang))
+  .filter((e) => (e.data.dateEnd ?? e.data.dateStart) >= now)
+  .sort((a, b) => a.data.dateStart.getTime() - b.data.dateStart.getTime())
+  .slice(0, 3);
+---
+
+<Base title={dict.heroTitle + ' — ' + dict.heroSubtitle} description={dict.heroLead} lang={lang} currentPath="/">
+  <section class="hero">
+    <div class="container">
+      <h1>{dict.heroTitle}</h1>
+      <p class="subtitle accent">{dict.heroSubtitle}</p>
+      <p class="lead muted">{dict.heroLead}</p>
+      <div class="cta-row">
+        <a href={link('/courses')} class="btn">{dict.ctaCourses}</a>
+        <a href={link('/contacts')} class="btn secondary">{dict.ctaContact}</a>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="container">
+      <Stats lang={lang} />
+    </div>
+  </section>
+
+  <section>
+    <div class="container grid grid-2">
+      <a class="card identity" href={link('/courses')}>
+        <div class="identity-icon">🤿</div>
+        <h2>{dict.identityDiver}</h2>
+        <p class="muted">{dict.identityDiverText}</p>
+      </a>
+      <a class="card identity" href={link('/hydrolab')}>
+        <div class="identity-icon">🚀</div>
+        <h2>{dict.identityHydrolab}</h2>
+        <p class="muted">{dict.identityHydrolabText}</p>
+      </a>
+    </div>
+  </section>
+
+  {seminars.length > 0 && (
+    <section>
+      <div class="container">
+        <h2>{dict.upcomingSeminars}</h2>
+        <div class="grid grid-3">
+          {seminars.map((entry) => <SeminarCard entry={entry} lang={lang} />)}
+        </div>
+        <p style="margin-top:1rem"><a href={link('/seminars')}>{dict.allSeminars} →</a></p>
+      </div>
+    </section>
+  )}
+
+  {news.length > 0 && (
+    <section>
+      <div class="container">
+        <h2>{dict.latestNews}</h2>
+        <div class="grid grid-3">
+          {news.map((entry) => <NewsCard entry={entry} lang={lang} />)}
+        </div>
+        <p style="margin-top:1rem"><a href={link('/news')}>{dict.allNews} →</a></p>
+      </div>
+    </section>
+  )}
+</Base>
+
+<style>
+  .hero {
+    padding: 5rem 0 3rem;
+    background: radial-gradient(ellipse at 70% 20%, rgba(47, 180, 255, 0.12), transparent 60%),
+      radial-gradient(ellipse at 20% 80%, rgba(255, 179, 71, 0.07), transparent 50%);
+  }
+  .subtitle { font-size: 1.15rem; font-weight: 600; margin: 0.75rem 0; }
+  .lead { max-width: 640px; margin-bottom: 1.75rem; }
+  .cta-row { display: flex; gap: 0.9rem; flex-wrap: wrap; }
+  .identity { color: var(--text); transition: border-color 0.15s ease; }
+  .identity:hover { text-decoration: none; border-color: var(--accent); }
+  .identity-icon { font-size: 2.2rem; margin-bottom: 0.6rem; }
+</style>
