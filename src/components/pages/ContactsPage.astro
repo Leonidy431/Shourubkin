@@ -12,10 +12,29 @@ const intro =
     ? 'Для записи на курсы, вопросов о семинарах и сотрудничества свяжитесь любым удобным способом.'
     : 'To apply for courses, ask about seminars or discuss cooperation, get in touch via any convenient channel.';
 
+// Реальные контакты приходят из секретов GitHub Actions на этапе сборки
+// (см. .github/workflows/deploy.yml); в репозитории хранятся только заглушки.
+const email = process.env.CONTACT_EMAIL || 'info@example.com';
+const maxNumber = process.env.CONTACT_MAX || '';
+const tgRaw = process.env.CONTACT_TELEGRAM || '';
+const tgHref = tgRaw
+  ? tgRaw.startsWith('@')
+    ? 'https://t.me/' + tgRaw.slice(1)
+    : /^[+\d][\d\s\-()]+$/.test(tgRaw)
+      ? 'https://t.me/+' + tgRaw.replace(/[^\d]/g, '')
+      : 'https://t.me/' + tgRaw
+  : 'https://t.me/username_here';
+
 const channels = [
-  { label: 'Telegram', href: 'https://t.me/username_here', note: lang === 'ru' ? 'самый быстрый способ' : 'fastest way' },
-  { label: 'WhatsApp', href: 'https://wa.me/70000000000', note: lang === 'ru' ? 'для международных запросов' : 'for international enquiries' },
-  { label: 'Email', href: 'mailto:info@example.com', note: 'info@example.com' },
+  {
+    label: 'Telegram',
+    href: tgHref,
+    note: tgRaw || (lang === 'ru' ? 'самый быстрый способ' : 'fastest way'),
+  },
+  ...(maxNumber
+    ? [{ label: 'MAX', href: 'tel:' + maxNumber.replace(/[^+\d]/g, ''), note: maxNumber }]
+    : []),
+  { label: 'Email', href: 'mailto:' + email, note: email },
 ];
 ---
 
@@ -34,11 +53,6 @@ const channels = [
         ))}
       </div>
 
-      <p class="muted note">
-        {lang === 'ru'
-          ? 'Контактные данные будут обновлены — актуальные ссылки на Telegram, WhatsApp и email добавит владелец сайта через админ-панель.'
-          : 'Contact details are placeholders — real Telegram, WhatsApp and email links will be added by the site owner.'}
-      </p>
     </div>
   </section>
 </Base>
